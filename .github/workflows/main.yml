@@ -1,0 +1,27 @@
+name: CI
+on:
+  push:
+    branches: [ master ]
+  schedule:
+    # M H DM M W
+    - cron: '22 22 22 * *'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v4
+    - name: Download new webview
+      run: |
+        sudo apt install git-lfs
+        git-lfs install
+        git clone --depth=1 https://github.com/LineageOS/android_external_chromium-webview_prebuilt_arm64 webview
+        cat webview/webview.apk > system/app/webview/webview.apk
+        rm -rf webview
+    - name: Pack new module
+      run: zip webview.zip -r *
+    - uses: actions/upload-artifact@v3
+      with:
+        name: webview
+        path: |
+          webview.zip
